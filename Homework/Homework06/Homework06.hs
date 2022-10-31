@@ -1,15 +1,17 @@
--- Question 1
--- Write a function called `repeat'` that takes a value and creates an infinite list with
--- the value provided as every element of the list.
+-- Question 1 Write a function called `repeat'` that takes a value and
+-- creates an infinite list with the value provided as every element
+-- of the list.
 --
 -- >>> repeat 17
 --[17,17,17,17,17,17,17,17,17...
+repeat' :: a -> [a]
+repeat' x = (x:repeat' x)
 
-
--- Question 2
--- Using the `repeat'` function and the `take` function we defined in the lesson (comes with Haskell),
--- create a function called `replicate'` that takes a number `n` and a value `x` and creates a list
--- of length `n` with `x` as the value of every element. (`n` has to be Integer.)
+-- Question 2 Using the `repeat'` function and the `take` function we
+-- defined in the lesson (comes with Haskell), create a function
+-- called `replicate'` that takes a number `n` and a value `x` and
+-- creates a list of length `n` with `x` as the value of every
+-- element. (`n` has to be Integer.)
 --
 -- >>> replicate 0 True
 -- []
@@ -17,24 +19,33 @@
 -- []
 -- >>> replicate 4 True
 -- [True,True,True,True]
-
+replicate' :: Int -> a -> [a]
+replicate' i x
+  | i <= 0    = []
+  | otherwise = take i $ repeat' x
 
 -- Question 3
 -- Write a function called `concat'` that concatenates a list of lists.
 --
 -- >>> concat' [[1,2],[3],[4,5,6]]
 -- [1,2,3,4,5,6]
+concat' :: [[Int]] -> [Int]
+concat' [[]]    = []
+concat' (xs:[]) = xs
+concat' (xs:ys) = xs ++ concat' ys
 
+-- Proposed solution
+concat'' :: [[a]] -> [a]
+concat'' = foldr (++) []
 
--- Question 4
--- Write a function called `zip'` that takes two lists and returns a list of
--- corresponding pairs (zips them) like this:
+-- Question 4 Write a function called `zip'` that takes two lists and
+-- returns a list of corresponding pairs (zips them) like this:
 --
 -- >>> zip' [1, 2] ['a', 'b']
 -- [(1,'a'),(2,'b')]
 --
--- If one input list is shorter than the other, excess elements of the longer
--- list are discarded, even if one of the lists is infinite:
+-- If one input list is shorter than the other, excess elements of the
+-- longer list are discarded, even if one of the lists is infinite:
 --
 -- >>> zip' [1] ['a', 'b']
 -- [(1,'a')]
@@ -44,26 +55,31 @@
 -- []
 -- >>> zip' [1..] []
 -- []
+zip' :: [a] -> [b] -> [(a, b)]
+zip' [] _          = []
+zip' _ []          = []
+zip' (x:xs) (y:ys) = (x, y) : zip' xs ys
 
-
-
--- Question 5
--- Create a function called `zipWith'` that generalises `zip'` by zipping with a
--- function given as the first argument, instead of a tupling function.
+-- Question 5 Create a function called `zipWith'` that generalises
+-- `zip'` by zipping with a function given as the first argument,
+-- instead of a tupling function.
 --
 -- > zipWith' (,) xs ys == zip' xs ys
 -- > zipWith' f [x1,x2,x3..] [y1,y2,y3..] == [f x1 y1, f x2 y2, f x3 y3..]
 --
--- For example, `zipWith' (+)` is applied to two lists to produce the list of
--- corresponding sums:
+-- For example, `zipWith' (+)` is applied to two lists to produce the
+-- list of corresponding sums:
 --
 -- >>> zipWith (+) [1, 2, 3] [4, 5, 6]
 -- [5,7,9]
+zipWith' :: (a -> b -> c) -> [a] -> [b] -> [c]
+zipWith' _ [] _          = []
+zipWith' _ _ []          = []
+zipWith' f (x:xs) (y:ys) = (f x y) : zipWith' f xs ys
 
-
--- Question 6
--- Write a function called `takeWhile'` that takes a precate and a list and
--- returns the list up until an element that doesn't satisfy the predicate.
+-- Question 6 Write a function called `takeWhile'` that takes a
+-- precate and a list and returns the list up until an element that
+-- doesn't satisfy the predicate.
 --
 -- >>> takeWhile (< 3) [1,2,3,4,1,2,3,4]
 -- [1,2]
@@ -71,17 +87,43 @@
 -- [1,2,3]
 -- >>> takeWhile (< 0) [1,2,3]
 -- []
+takeWhile' :: (a -> Bool) -> [a] -> [a]
+takeWhile' _ []     = []
+takeWhile' p (x:xs) = if p x
+                      then x:[]
+                      else x : takeWhile' p xs
 
+--Proposed solution
+takeWhile'' :: (a -> Bool) -> [a] -> [a]
+takeWhile'' _ [] = []
+takeWhile'' p (x : xs)
+  | p x = x : takeWhile'' p xs
+  | otherwise = []
 
--- Question 7 (More difficult)
--- Write a function that takes in an integer n, calculates the factorial n! and
--- returns a string in the form of 1*2* ... *n = n! where n! is the actual result.
+-- Question 7 (More difficult) Write a function that takes in an
+-- integer n, calculates the factorial n! and returns a string in the
+-- form of 1*2* ... *n = n! where n! is the actual result.
+verbFact :: Integer -> String
+verbFact n = verbFact' n 1
 
+verbFact' :: Integer -> Integer  -> String
+verbFact' 1 c = "1 = " ++ show c
+verbFact' n c = show n ++ "*" ++ verbFact' (n - 1) (c * n)
 
--- Question 8
--- Below you have defined some beer prices in bevogBeerPrices and your order list in
--- orderList + the deliveryCost. Write a function that takes in an order and calculates
--- the cost including delivery. Assume that the two lists have the beers in the same order.
+-- Proposed solution
+factorial :: Int -> String
+factorial n = accumulate 2 "1" ++ " = " ++ show result
+  where
+    accumulate x string
+      | x > n = string
+      | otherwise = accumulate (x + 1) (string ++ "*" ++ show x)
+    result = product [1 .. n]
+
+-- Question 8 Below you have defined some beer prices in
+-- bevogBeerPrices and your order list in orderList + the
+-- deliveryCost. Write a function that takes in an order and
+-- calculates the cost including delivery. Assume that the two lists
+-- have the beers in the same order.
 
 bevogBeerPrices :: [(String, Double)]
 bevogBeerPrices =
@@ -100,3 +142,21 @@ orderList =
 
 deliveryCost :: Double
 deliveryCost = 8.50
+
+costOrder :: [(String, Double)] -> Double
+costOrder [] = 0
+costOrder ((beer, n):xs) = (n * (snd $ head $ filter (\(b,p) -> b == beer) bevogBeerPrices))
+                           + costOrder xs
+
+-- Proposed solution
+beerCosts :: [(String, Double)] -> Double
+beerCosts =
+  foldr (+) deliveryCost
+    . zipWith (*) (map snd bevogBeerPrices)
+    . map snd
+    . filter (\name -> fst name `elem` map fst bevogBeerPrices)
+
+-- Question from classmate
+fruitWithA :: Char -> [(String, Int)]
+fruitWithA y = filter tempFunct [("Apple",1), ("Banana",2), ("Pear",3), ("Grape",4), ("Wood",5)]
+  where tempFunct x = elem y $ fst x
