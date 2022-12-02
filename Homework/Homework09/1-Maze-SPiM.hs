@@ -79,15 +79,18 @@ testMaze = Inside GoForward (Inside GoLeft (Inside GoLeft Exit))
 -- 4. Write the "solveMaze" function that will take a maze and a list of
 -- moves and returns the maze after making those moves.
 
-solveMaze :: Maze -> [Move] -> Maze
-solveMaze ma []       = ma
-solveMaze ma (mo:mos) = solveMaze (move ma mo) mos
+solveMaze' :: Maze -> [Move] -> Maze
+--solveMaze' ma []       = ma
+--solveMaze' ma (mo:mos) = solveMaze' (move ma mo) mos
 
--- λ> solveMaze testMaze [GoForward, GoLeft, GoLeft]
+-- Solution uses FOLDL:
+solveMaze' = foldl move
+
+-- λ> solveMaze' testMaze [GoForward, GoLeft, GoLeft]
 -- Exit
--- λ> solveMaze testMaze [GoForward, GoLeft]
+-- λ> solveMaze' testMaze [GoForward, GoLeft]
 -- Inside GoLeft Exit
--- λ> solveMaze testMaze [GoForward, GoLeft, GoRight]
+-- λ> solveMaze' testMaze [GoForward, GoLeft, GoRight]
 -- Inside GoLeft Exit
 
 -- 5. If you test the "solveMaze" function, you'll see that each time you
@@ -104,14 +107,14 @@ showCurrentChoice (Inside _ _) = "You're still inside the maze. Choose a path, b
 -- 6. Adapt adapt "solveMaze" function to use "showCurrentChoice" and
 -- play with your new game using GHCi! :D
 
-solveMaze' :: Maze -> [Move] -> String
-solveMaze' ma mo = showCurrentChoice $ solveMaze ma mo
+solveMaze :: Maze -> [Move] -> String
+solveMaze ma mo = showCurrentChoice $ solveMaze' ma mo
 
--- λ> solveMaze' testMaze [GoForward, GoLeft]
+-- λ> solveMaze testMaze [GoForward, GoLeft]
 -- "You're still inside the maze. Choose a path, brave adventurer: GoLeft, GoRight, or GoForward."
--- λ> solveMaze' testMaze [GoForward, GoLeft, GoLeft]
+-- λ> solveMaze testMaze [GoForward, GoLeft, GoLeft]
 -- "YOU'VE FOUND THE EXIT !!"
--- λ> solveMaze' testMaze [GoForward, GoLeft, GoRight]
+-- λ> solveMaze testMaze [GoForward, GoLeft, GoRight]
 -- "You've hit a wall!"
--- λ> solveMaze' testMaze [GoForward, GoLeft, GoLeft, GoRight]
+-- λ> solveMaze testMaze [GoForward, GoLeft, GoLeft, GoRight]
 -- "YOU'VE FOUND THE EXIT !!"
