@@ -57,44 +57,49 @@ data Move = GoForward
 
 type Position = (Int, Int)
 type Stamina = Int 
-
 data Status = Exit
             | NoStamina
-            | InForest { exitAt :: Position
-                       , stamina :: Stamina }
+            | InForest Position Stamina
             deriving (Show)
 
+-- The movement has two parts, consuming the stamina and translating
+-- the player. If the stamina is depleted then the status is
+-- NoStamina.
+
 consumeStamina :: Status -> Stamina -> Status
-consumeStamina InForest {exitAt = (x, y), stamina = s} consume
+consumeStamina (InForest (x, y) s) consume
   | (s - consume) <= 0 = NoStamina
-  | otherwise          = InForest {exitAt = (x, y), stamina = (s - consume)}
+  | otherwise          = InForest (x, y) (s - consume)
 
 applyMove :: Status -> Move -> Status
-applyMove NoStamina                               _         = NoStamina
-applyMove InForest {exitAt = (x, y), stamina = s} GoForward = InForest {exitAt = (x - 1, y), stamina = s}
-applyMove InForest {exitAt = (x, y), stamina = s} GoLeft    = InForest {exitAt = ((y - 1), (-x)), stamina = s}
-applyMove InForest {exitAt = (x, y), stamina = s} GoRight   = InForest {exitAt = (-(y + 1), x), stamina = s}
+applyMove NoStamina           _         = NoStamina
+applyMove (InForest (x, y) s) GoForward = InForest (x - 1   , y) s
+applyMove (InForest (x, y) s) GoLeft    = InForest ((y - 1) , (-x)) s
+applyMove (InForest (x, y) s) GoRight   = InForest (-(y + 1), x) s
 
 move :: Status -> Move -> Status
 move s m = applyMove (consumeStamina s 3) m
 
+-- Apply the movements list recursively, then transform to appropiated
+-- string depending on final status
+
 solve :: Status -> [Move] -> Status
-solve NoStamina                               _      = NoStamina
-solve InForest {exitAt = (0, 0)}              _      = Exit
-solve InForest {exitAt = (x, y), stamina = s} []     = InForest {exitAt = (x, y), stamina = s}
-solve InForest {exitAt = (x, y), stamina = s} (m:ms) = solve (move
-                                                              InForest {exitAt = (x, y), stamina = s}
-                                                              m) ms
+solve NoStamina           _      = NoStamina
+solve (InForest (0, 0) _) _      = Exit
+solve (InForest (x, y) s) []     = InForest (x, y) s
+solve (InForest (x, y) s) (m:ms) = solve (move (InForest (x, y) s) m) ms
 
 showCurrentChoice :: Status -> String
-showCurrentChoice Exit        = "YOU'VE FOUND THE EXIT !!"
-showCurrentChoice NoStamina   = "You ran out of stamina and died -.-!"
-showCurrentChoice InForest {stamina = s} = "You have " ++ show s ++ " stamina, and you're still inside the Forest. Choose a path, brave adventurer: GoLeft, GoRight, or GoForward."
+showCurrentChoice Exit           = "YOU'VE FOUND THE EXIT !!"
+showCurrentChoice NoStamina      = "You ran out of stamina and died -.-!"
+showCurrentChoice (InForest _ s) = "You have " ++ show s ++ " stamina, and you're still inside the Forest. Choose a path, brave adventurer: GoLeft, GoRight, or GoForward."
 
 solveForest :: Status -> [Move] -> String
 solveForest st mo = showCurrentChoice $ solve st mo
 
-testForest = InForest {exitAt = (2, 1), stamina = 10}
+-- The testing case:
+
+testForest = InForest (2, 1) 10
 
 -- λ> solveForest testForest []
 -- "You have 10 stamina, and you're still inside the Forest. Choose a path, brave adventurer: GoLeft, GoRight, or GoForward."
@@ -111,14 +116,10 @@ testForest = InForest {exitAt = (2, 1), stamina = 10}
 
 -- Trace the path to debug -----------------------------------------------------
 tracePath :: Status -> [Move] -> [Status]
-tracePath _                                     []     = []
-tracePath Exit                                  _      = []
-tracePath NoStamina                             _      = []
-tracePath InForest {exitAt = (x, y), stamina = s} (m:ms) = (move
-                                                          InForest {exitAt = (x, y), stamina = s}
-                                                          m) : tracePath (move
-                                                                          InForest {exitAt = (x, y), stamina = s}
-                                                                          m) ms
+tracePath _                   []     = []
+tracePath Exit                _      = []
+tracePath NoStamina           _      = []
+tracePath (InForest (x, y) s) (m:ms) = (move (InForest (x, y) s) m) : tracePath (move (InForest (x, y) s) m) ms
 
 -- λ> tracePath InForest {exitAt = (3, 3), stamina = 3} [GoForward, GoForward, GoLeft, GoLeft, GoForward, GoForward, GoRight, GoRight, GoForward, GoForward, GoForward, GoLeft]
 -- [InForest {exitAt = (2,3), stamina = 2},InForest {exitAt = (1,3), stamina = 1},InForest {exitAt = (2,-1), stamina = 0},NoStamina]
