@@ -50,6 +50,7 @@ data Move = GoLeft
           deriving (Eq, Show)
 
 data Maze = Exit
+          | Wall
           | Inside Move Maze
           deriving (Show)
 
@@ -58,21 +59,22 @@ data Maze = Exit
 
 move :: Maze -> Move -> Maze
 move Exit           _ = Exit
+move Wall           _ = Wall
 move (Inside mo ma) m = if mo == m
                         then ma
-                        else (Inside mo ma)
+                        else Wall
 
 -- 3. Write a "testMaze" value of type "Maze" and test the "move"
 -- function in GHCi.
 
 testMaze = Inside GoForward (Inside GoLeft (Inside GoLeft Exit))
 
--- λ> testMaze
--- Inside GoForward (Inside GoLeft (Inside GoLeft Exit))
 -- λ> move testMaze GoForward
 -- Inside GoLeft (Inside GoLeft Exit)
 -- λ> move (move (move testMaze GoForward) GoLeft) GoLeft
 -- Exit
+-- λ> move testMaze GoRight
+-- Wall
 
 -- 4. Write the "solveMaze" function that will take a maze and a list of
 -- moves and returns the maze after making those moves.
@@ -96,12 +98,20 @@ solveMaze ma (mo:mos) = solveMaze (move ma mo) mos
 
 showCurrentChoice :: Maze -> String
 showCurrentChoice Exit         = "YOU'VE FOUND THE EXIT !!"
+showCurrentChoice Wall         = "You've hit a wall!"
 showCurrentChoice (Inside _ _) = "You're still inside the maze. Choose a path, brave adventurer: GoLeft, GoRight, or GoForward."
-
--- Hit the Wall !?!?
 
 -- 6. Adapt adapt "solveMaze" function to use "showCurrentChoice" and
 -- play with your new game using GHCi! :D
 
 solveMaze' :: Maze -> [Move] -> String
 solveMaze' ma mo = showCurrentChoice $ solveMaze ma mo
+
+-- λ> solveMaze' testMaze [GoForward, GoLeft]
+-- "You're still inside the maze. Choose a path, brave adventurer: GoLeft, GoRight, or GoForward."
+-- λ> solveMaze' testMaze [GoForward, GoLeft, GoLeft]
+-- "YOU'VE FOUND THE EXIT !!"
+-- λ> solveMaze' testMaze [GoForward, GoLeft, GoRight]
+-- "You've hit a wall!"
+-- λ> solveMaze' testMaze [GoForward, GoLeft, GoLeft, GoRight]
+-- "YOU'VE FOUND THE EXIT !!"
