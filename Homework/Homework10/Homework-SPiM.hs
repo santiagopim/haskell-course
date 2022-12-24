@@ -12,6 +12,46 @@
 -- - Then, add a function called `unwrap` that gives you back the
 -- value inside a container.
 
+data Box a = EmptyBox
+           | Has a
+           deriving (Show)
+
+data Present t p = EmptyPresent t
+                 | PresentFor t p
+                 deriving (Show)
+
+class Container c where
+  isEmpty  :: c a -> Bool
+  contains :: (Eq a) => c a -> a -> Bool
+  replace  :: c a -> b -> c b
+  unwrap   :: c a -> Maybe a
+  
+instance Container Box where
+  isEmpty EmptyBox = True
+  isEmpty _        = False
+
+  contains EmptyBox _  = False
+  contains (Has x)  y  = x == y
+
+  replace _ x = Has x
+
+  unwrap EmptyBox = Nothing
+  unwrap (Has x)  = Just x
+
+instance Container (Present t) where
+  isEmpty (EmptyPresent _) = True
+  isEmpty _                = False
+
+  contains (EmptyPresent _) _ = False
+  contains (PresentFor _ x) y = x == y
+
+  replace (EmptyPresent t) x = PresentFor t x
+  replace (PresentFor t _) x = PresentFor t x
+
+  unwrap (EmptyPresent t) = Nothing
+  unwrap (PresentFor t x) = Just x
+
+
 -- 2. Create an instance for the `MailedBox` data type.
 -- - The MailedBox data type represents a box sent through the mail.
 -- - The parameter `t` is a tag with a person's identifier
