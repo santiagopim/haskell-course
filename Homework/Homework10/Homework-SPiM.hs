@@ -28,6 +28,7 @@ class Container c where
   contains :: (Eq a) => c a -> a -> Bool
   replace  :: c a -> b -> c b
   unwrap   :: c a -> Maybe a
+--unwrap   :: c a -> a -> a
   
 instance Container Box where
   isEmpty EmptyBox = True
@@ -40,6 +41,8 @@ instance Container Box where
 
   unwrap EmptyBox = Nothing
   unwrap (Has x)  = Just x
+--unwrap EmptyBox x = x
+--unwrap (Has x)  _ = x
 
 instance Container (Present t) where
   isEmpty (EmptyPresent _) = True
@@ -53,6 +56,8 @@ instance Container (Present t) where
 
   unwrap (EmptyPresent _) = Nothing
   unwrap (PresentFor _ x) = Just x
+--unwrap (EmptyPresent _) x = x
+--unwrap (PresetFor _ x)  _ = x
 
 -- 2. Create an instance for the `MailedBox` data type.
 -- - The MailedBox data type represents a box sent through the mail.
@@ -75,6 +80,8 @@ instance Container (MailedBox t d) where
 
   unwrap (EmptyMailBox _ _) = Nothing
   unwrap (MailBoxTo _ _ x)  = Just x
+--unwrap (EmptyMailBox _ _) x = x
+--unwrap (MailBoxTo _ _ x)  _ = x
 
 -- Question 2 --
 
@@ -132,10 +139,12 @@ charizard = Pokemon "Charizard" ["Fire", "Flying"] 1 6
 venusaur = Pokemon "Venusaur" ["Grass", "Poison"] 1 3
 
 instance Ord Pokemon where
-  compare (Pokemon _ _ g1 x1) (Pokemon _ _ g2 x2) = compare
-                                                    (g1 * getRandom x2)
-                                                    (g2 * getRandom x2)
-
+  compare
+    Pokemon {pGeneration = g1, pPokeDexNum = x1}
+    Pokemon {pGeneration = g2, pPokeDexNum = x2} = compare
+                                                   (g1 * getRandom x1)
+                                                   (g2 * getRandom x2)
+    
 getRandom :: Int -> Int
 getRandom s = do
   let (r, g) = R.random (R.mkStdGen s)
