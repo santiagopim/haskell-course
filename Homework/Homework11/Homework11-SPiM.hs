@@ -26,7 +26,12 @@ message.
 -- doesFileExist :: FilePath -> IO Bool
 -- listDirectory :: FilePath -> IO [FilePath]
 
--- listFiles :: IO ()
+listFiles :: IO ()
+listFiles = listDirectory "./"
+            >>= (\filePaths ->
+                   putStrLn $ "Number of files: " ++ show (length filePaths))
+--listFiles = listDirectory "./" >>= (\filePaths -> print $ length filePaths)
+--listFiles = listDirectory "./" >>= (\filePaths -> putStrLn $ show filePaths)
 
 {-
 -- Question 2 -- Write an IO action that asks the user to type
