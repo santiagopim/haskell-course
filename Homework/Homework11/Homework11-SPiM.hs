@@ -40,8 +40,15 @@ that, it reads the text from the msg.txt file and prints it back. Use
 the writeFile and readFile functions.
 -}
 
--- createMsg :: IO ()
-
+createMsg :: IO ()
+createMsg = do
+  putStrLn "Type something:"
+  something <- getLine
+  print something
+  writeFile "msg.txt" something
+  putStrLn "... file written"
+  resomething <- readFile "msg.txt"
+  print resomething
 
 {-
 -- Context for Questions 3 and 4 -- In cryptography, prime numbers
@@ -87,7 +94,15 @@ The CPU time here is given in picoseconds (which is 1/1000000000000th
 of a second).
 -}
 
--- timeIO :: IO a -> IO ()
+timeIO :: IO a -> IO ()
+timeIO action = do
+  init <- getCPUTime
+  --print init
+  action
+  fint <- getCPUTime
+  --print fint
+  print $ divMod (fint - init) 10_000_000_000
+  
 
 
 {-
@@ -97,7 +112,16 @@ three algorithms take to produce the largest prime before the limit.
 Print the number and time to the standard output.
 -}
 
--- benchmark :: IO ()
+benchmark :: IO ()
+benchmark = do
+  putStrLn "Give me some number:"
+  value <- getLine
+  let limit = (read value :: Integer)
+  --print limit
+  timeIO (print (primes1 limit))
+  timeIO (print (primes2 limit))
+  timeIO (print (primes3 limit))
+
 
 {-
  -- Question 5 -- EXTRA CREDITS -- (In case the previous ones were too
