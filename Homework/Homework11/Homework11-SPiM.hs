@@ -147,3 +147,35 @@ HINT: You can use the function doesFileExist, which takes in a
 FilePath and returns True if the argument file exists and is not a
 directory, and False otherwise.
 -}
+
+--getFiles :: IO ()
+--getFiles = listDirectory "./" >>= (\filePaths -> putStrLn $ show filePaths)
+
+getFiles :: String -> IO ()
+getFiles d = listDirectory d >>= (\files -> printFiles $ map (d ++) (sort files))
+
+-- getTree :: [String] -> IO [[String]]
+-- getTree []     = []
+-- getTree (f:fs) = do
+--   doesFileExist f >>= (\exists ->
+--                          if exists
+--                          then )
+
+getDirectory :: String -> IO [String]
+getDirectory d = listDirectory d >>= (\files -> return (sort files))
+
+-- getTree :: IO [[String]]
+-- getTree = do
+  
+printFiles :: [String] -> IO ()
+printFiles []     = putStr ""
+printFiles (f:fs) =
+  do doesFileExist f >>= (\exists ->
+                            if exists
+                            then putStrLn ("└── " ++ f)
+                            else do
+                              putStr "    "
+                              putStrLn ("    " ++ f)
+                              getFiles (f ++ "/"))
+     printFiles fs
+
