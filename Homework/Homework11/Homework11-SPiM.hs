@@ -148,36 +148,26 @@ FilePath and returns True if the argument file exists and is not a
 directory, and False otherwise.
 -}
 
---getFiles :: IO ()
---getFiles = listDirectory "./" >>= (\filePaths -> putStrLn $ show filePaths)
+-- Works with 'getFiles ["./"]'
 
-getFiles :: Int -> String -> IO ()
-getFiles l d = listDirectory d >>= (\files -> printFiles l $ map (d ++) (sort files))
+getPath :: [String] -> String
+getPath []     = ""
+getPath (p:ps) = p ++ "/" ++ getPath ps
 
--- getTree :: [String] -> IO [[String]]
--- getTree []     = []
--- getTree (f:fs) = do
---   doesFileExist f >>= (\exists ->
---                          if exists
---                          then )
+getFiles :: [String] -> IO ()
+getFiles d = listDirectory (getPath d) >>= (\files -> printFiles d (sort files))
 
-getDirectory :: String -> IO [String]
-getDirectory d = listDirectory d >>= (\files -> return (sort files))
-
--- getTree :: IO [[String]]
--- getTree = do
-  
-printFiles :: Int -> [String] -> IO ()
-printFiles _ []     = putStr "" -- return ()
-printFiles l (f:fs) = do
-  doesFileExist f >>= (\exists ->
+printFiles :: [String] -> [String] -> IO ()
+printFiles _    []     = putStr "" -- return ()
+printFiles path (f:fs) = do
+  doesFileExist (getPath path ++ "/" ++ f) >>= (\exists ->
                           if exists
                           then do
-                            putStr $ replicate (l * 4) ' '
+                            putStr $ replicate (((length path) - 1) * 4) ' '
                             putStrLn ("└── " ++ f)
                           else do
-                            putStr $ replicate (l * 4) ' '
+                            putStr $ replicate (((length path) - 1) * 4) ' '
                             putStrLn ("└── " ++ f)
-                            getFiles (l + 1) (f ++ "/"))
-  printFiles l fs
+                            getFiles (path ++ [f]))
+  printFiles path fs
 
