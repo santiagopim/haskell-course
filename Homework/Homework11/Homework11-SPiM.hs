@@ -148,7 +148,15 @@ FilePath and returns True if the argument file exists and is not a
 directory, and False otherwise.
 -}
 
--- Works with 'getFiles ["./"]'
+printDirectory :: String -> IO()
+printDirectory p = do
+  putStrLn "."
+  getFiles [p]
+
+printLine :: [String] -> String -> IO()
+printLine p f = do
+  putStr $ replicate (((length p) - 1) * 4) ' '
+  putStrLn ("└── " ++ f)
 
 getPath :: [String] -> String
 getPath []     = ""
@@ -160,14 +168,12 @@ getFiles d = listDirectory (getPath d) >>= (\files -> printFiles d (sort files))
 printFiles :: [String] -> [String] -> IO ()
 printFiles _    []     = putStr "" -- return ()
 printFiles path (f:fs) = do
-  doesFileExist (getPath path ++ "/" ++ f) >>= (\exists ->
+  let p = getPath path ++ "/" ++ f
+  doesFileExist p >>= (\exists ->
                           if exists
-                          then do
-                            putStr $ replicate (((length path) - 1) * 4) ' '
-                            putStrLn ("└── " ++ f)
+                          then printLine path f
                           else do
-                            putStr $ replicate (((length path) - 1) * 4) ' '
-                            putStrLn ("└── " ++ f)
+                            printLine path f
                             getFiles (path ++ [f]))
   printFiles path fs
 
