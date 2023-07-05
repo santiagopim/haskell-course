@@ -153,10 +153,12 @@ printDirectory p = do
   putStrLn "."
   getFiles [p]
 
-printLine :: Int -> String -> IO()
-printLine l f = do
+printLine :: Bool -> Int -> String -> IO()
+printLine e l f = do
   putStr $ replicate ((l - 1) * 4) ' '
-  putStrLn ("└── " ++ f)
+  if e
+    then putStrLn ("└── " ++ f)
+    else putStrLn ("├── " ++ f)
 
 getPath :: [String] -> String
 getPath []     = ""
@@ -169,12 +171,13 @@ printFiles :: [String] -> [String] -> IO ()
 printFiles _    []     = putStr "" -- return ()
 printFiles path (f:fs) = do
   let p = getPath path ++ "/" ++ f
+  let e = length fs == 0
   let l = length path
   doesFileExist p >>= (\exists ->
                           if exists
-                          then printLine l f
+                          then printLine e l f
                           else do
-                            printLine l f
+                            printLine e l f
                             getFiles (path ++ [f]))
   printFiles path fs
 
