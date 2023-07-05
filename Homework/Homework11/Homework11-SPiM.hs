@@ -151,8 +151,8 @@ directory, and False otherwise.
 --getFiles :: IO ()
 --getFiles = listDirectory "./" >>= (\filePaths -> putStrLn $ show filePaths)
 
-getFiles :: String -> IO ()
-getFiles d = listDirectory d >>= (\files -> printFiles $ map (d ++) (sort files))
+getFiles :: Int -> String -> IO ()
+getFiles l d = listDirectory d >>= (\files -> printFiles l $ map (d ++) (sort files))
 
 -- getTree :: [String] -> IO [[String]]
 -- getTree []     = []
@@ -167,15 +167,17 @@ getDirectory d = listDirectory d >>= (\files -> return (sort files))
 -- getTree :: IO [[String]]
 -- getTree = do
   
-printFiles :: [String] -> IO ()
-printFiles []     = putStr ""
-printFiles (f:fs) =
-  do doesFileExist f >>= (\exists ->
-                            if exists
-                            then putStrLn ("└── " ++ f)
-                            else do
-                              putStr "    "
-                              putStrLn ("    " ++ f)
-                              getFiles (f ++ "/"))
-     printFiles fs
+printFiles :: Int -> [String] -> IO ()
+printFiles _ []     = putStr "" -- return ()
+printFiles l (f:fs) = do
+  doesFileExist f >>= (\exists ->
+                          if exists
+                          then do
+                            putStr $ replicate (l * 4) ' '
+                            putStrLn ("└── " ++ f)
+                          else do
+                            putStr $ replicate (l * 4) ' '
+                            putStrLn ("└── " ++ f)
+                            getFiles (l + 1) (f ++ "/"))
+  printFiles l fs
 
