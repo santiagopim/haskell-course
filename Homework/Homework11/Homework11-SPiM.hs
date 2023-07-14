@@ -148,10 +148,37 @@ FilePath and returns True if the argument file exists and is not a
 directory, and False otherwise.
 -}
 
+{-
+The printDirectory function gets the path to be printed, prints a dot
+".", and calls getFiles with the path as parameter.
+
+The getFiles function gets the path to be printed as parameter,
+creates a list with all files from that path, and passes that list to
+the printFiles function to print them.
+
+The printFiles function gets a path and a list of files from that path
+as parameters, checks recursively if every file in the list is a file
+or a directory, in case it is a file just print it, in case it is a
+directory then calls getFiles again with the new sub-path.
+
+Interenstingly the path parameter in getFiles and printFiles functions
+is a list of the directories that traverses to that path, i.e, the
+"./one/foo/bar" path is listed as ["one", "foo", "bar"], so the level
+to indent every line is acquired just with the length of the list.
+
+The getPath and printLine functions are auxiliary.
+-}
 printDirectory :: String -> IO()
 printDirectory p = do
   putStrLn "."
   getFiles [p]
+
+getFiles :: [String] -> IO ()
+getFiles p = listDirectory (getPath p) >>= (\files -> printFiles p (sort files))
+
+getPath :: [String] -> String
+getPath []     = ""
+getPath (p:ps) = p ++ "/" ++ getPath ps
 
 printLine :: Bool -> Int -> String -> IO()
 printLine e l f = do
@@ -159,13 +186,6 @@ printLine e l f = do
   if e
     then putStrLn ("└── " ++ f)
     else putStrLn ("├── " ++ f)
-
-getPath :: [String] -> String
-getPath []     = ""
-getPath (p:ps) = p ++ "/" ++ getPath ps
-
-getFiles :: [String] -> IO ()
-getFiles d = listDirectory (getPath d) >>= (\files -> printFiles d (sort files))
 
 printFiles :: [String] -> [String] -> IO ()
 printFiles _    []     = putStr "" -- return ()
